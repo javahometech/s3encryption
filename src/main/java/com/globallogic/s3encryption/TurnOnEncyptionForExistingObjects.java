@@ -1,9 +1,9 @@
 package com.globallogic.s3encryption;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
@@ -13,9 +13,17 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 public class TurnOnEncyptionForExistingObjects {
+	private static BufferedWriter buffer = null;
+	static {
+		try {
+//			buffer = new BufferedWriter(new FileWriter("/Users/kammana/harilog.log"));
+			buffer = new BufferedWriter(new FileWriter("C:\\s3log.log"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	public static void S3EncryptionMigrator(String bucketName) throws IOException {
 		AmazonS3Client amazonS3Client = new AmazonS3Client();
-
 		ObjectListing objectListing = amazonS3Client.listObjects(bucketName);
 		List<S3ObjectSummary> s3ObjectSummaries = objectListing.getObjectSummaries();
 		
@@ -38,16 +46,17 @@ public class TurnOnEncyptionForExistingObjects {
 					s3ObjectKey);
 			copyObjectRequest.setNewObjectMetadata(meta);
 			amazonS3Client.copyObject(copyObjectRequest); // Save the file
-			System.out.println(">> '" + s3ObjectKey + "' encrypted.");
+			buffer.write(s3ObjectKey+" encrypted\n");
 		}
 	}
 
 	public static void main(String[] args) throws IOException {
-		String[] bucketNames = {"javahome-videos"};
+		String[] bucketNames = {"kammana"};
 		
 		for (String bucketName : bucketNames) {
 			S3EncryptionMigrator(bucketName);
 		}
+		buffer.close();
 	}
 
 }
